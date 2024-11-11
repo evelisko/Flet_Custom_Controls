@@ -37,12 +37,24 @@ def main(page: ft.Page):
 
         # Метод для заполнения списка файлов.
     def read_files_list(files: List[FilePickerFile]):
-        lv.controls = None
-        lv.controls = list(map(lambda x: ft.CupertinoListTile(title=ft.Text(x.name),
-                                                               bgcolor_activated=ft.colors.AMBER_ACCENT,
-                                                               on_click=on_file_list_click,
-                                                               padding=1), files))
-        lv.update()
+        # lv.controls = None
+        # lv.controls = list(map(lambda x: ft.CupertinoListTile(title=ft.Text(x.name),
+        #                                                        bgcolor_activated=ft.colors.AMBER_ACCENT,
+        #                                                        on_click=on_file_list_click,
+        #                                                        padding=1), files))
+        
+        dt_files.rows=list(map(lambda x: ft.DataRow(
+                                cells=[
+                                    ft.DataCell(ft.Text("1")),
+                                    ft.DataCell(ft.Text(x.name)),
+                                    # ft.DataCell(ft.Text("43")),
+                                ],
+                    selected=True,
+                    on_select_changed=lambda e: print(f"row select changed: {e.data}"),
+                ), files ))
+        
+
+        dt_files.update()
 
     def pick_files_result(e: ft.FilePickerResultEvent):
         # print(e.files) # Список файлов.
@@ -239,7 +251,17 @@ def main(page: ft.Page):
     # Перенос видео через drug & drop.
     #====================================================================
   
-    lv = ft.ListView(expand=1, spacing=5, padding=5, auto_scroll=True, item_extent=2)
+    # lv = ft.ListView(expand=1, spacing=5, padding=5, auto_scroll=True, item_extent=2)
+    dt_files = ft.DataTable(
+            columns=[
+                ft.DataColumn(ft.Text("id")),
+                ft.DataColumn(ft.Text("Name")),
+                # ft.DataColumn(ft.Text("time"),  numeric=True),
+            ],
+            rows=[],
+            selected=True,
+            on_select_changed=lambda e: print(f"row select changed: {e.data}"),
+                ),
     gd = ft.GestureDetector(
                 content=ft.VerticalDivider(),
                 drag_interval=10,
@@ -248,7 +270,7 @@ def main(page: ft.Page):
                 visible=False
             )
     cnt = ft.Container(
-                content=lv,
+                content=dt_files,
                 bgcolor=ft.colors.AMBER_100,
                 alignment=ft.alignment.center,
                 expand=1,
