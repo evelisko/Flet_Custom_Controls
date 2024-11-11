@@ -7,7 +7,9 @@ import base64
 import flet as ft
 import threading
 from time import sleep
+from typing import List 
 from datetime import datetime, timedelta, timezone
+from flet_core.file_picker import FilePickerFile
 import flet.canvas as cv
 import numpy as np
 from image_viewer import ImageViewer
@@ -29,18 +31,33 @@ def main(page: ft.Page):
     page.window.left = page.window.left + 100
     page.theme_mode = ft.ThemeMode.LIGHT
 
+    def on_file_list_click(e): # 8ec182
+        print(e.control.title.value)
+        print(e.control.parent.item_extent)
+
+        # Метод для заполнения списка файлов.
+    def read_files_list(files: List[FilePickerFile]):
+        lv.controls = None
+        lv.controls = list(map(lambda x: ft.CupertinoListTile(title=ft.Text(x.name),
+                                                               bgcolor_activated=ft.colors.AMBER_ACCENT,
+                                                               on_click=on_file_list_click,
+                                                               padding=1), files))
+        lv.update()
+
     def pick_files_result(e: ft.FilePickerResultEvent):
-        print(e.files) # Список файлов.
+        # print(e.files) # Список файлов.
         global current_frame
         global capture
         global latency
         global frame_count
         global is_video_play
         global total_time
+
         page.title  = (
             ", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!"
         )
         if e.files:
+            read_files_list(e.files)
             file_name = e.files[0].path
             current_frame = 0
             is_new = True
@@ -209,7 +226,7 @@ def main(page: ft.Page):
         ),
         # bgcolor=ft.colors.RED
         )
-    #================================================================
+    #====================================================================
     pick_files_dialog = ft.FilePicker(on_result=pick_files_result)
     page.overlay.append(pick_files_dialog)
     img_viewer = ImageViewer(on_mouse_move=on_image_viewer_mouse_move)
@@ -221,13 +238,8 @@ def main(page: ft.Page):
                         )
     # Перенос видео через drug & drop.
     #====================================================================
-    lv = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
-
-    count = 1
-    for i in range(0, 5):
-        lv.controls.append(ft.Text(f"Line {count}"))
-        count += 1
-
+  
+    lv = ft.ListView(expand=1, spacing=5, padding=5, auto_scroll=True, item_extent=2)
     gd = ft.GestureDetector(
                 content=ft.VerticalDivider(),
                 drag_interval=10,
@@ -237,7 +249,7 @@ def main(page: ft.Page):
             )
     cnt = ft.Container(
                 content=lv,
-                bgcolor=ft.colors.BROWN_400,
+                bgcolor=ft.colors.AMBER_100,
                 alignment=ft.alignment.center,
                 expand=1,
                 visible= False
