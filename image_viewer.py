@@ -1,10 +1,12 @@
 import os
 import cv2
+import json
 import base64
 import flet as ft
 import flet.canvas as cv
-# from flet_core.event_handler import EventHandler
-# from flet_core.control_event import ControlEvent
+from flet_core.event_handler import EventHandler
+from flet_core.control_event import ControlEvent
+from flet_core.types import OptionalEventCallable
 import numpy as np
 
 
@@ -17,15 +19,11 @@ class Size():
         self.width = width
         self.height = height
 
-# class CanvasResizeEvent(ControlEvent):
-#     def __init__(self, e: ControlEvent) -> None:
-#         super().__init__(e.target, e.name, e.data, e.control, e.page)
-#         d = json.loads(e.data)
-#         self.width: float = d.get("w")
-#         self.height: float = d.get("h")
-
 class ImageViewer(ft.UserControl):
-    def __init__(self, on_mouse_move):
+    def __init__(self,
+                  on_mouse_move = None,
+                #   canvas_shape = None
+                  ):
         super().__init__()
         self.cursor_position_x = 0
         self.cursor_position_y = 0
@@ -37,14 +35,17 @@ class ImageViewer(ft.UserControl):
         self.ft_img = None
         self.expand = True
         self.img = None
-        self._on_mouse_move = on_mouse_move
-        # self.__on_mouse_move = EventHandler(lambda e: CanvasResizeEvent(e))
-        # self._add_event_handler("resize", self.__on_mouse_move.get_handler())
-    
+
+        # self.cursor_shape = None
+
+        # Докинуть еще каких-нибудь 
+        self.__on_mouse_move = on_mouse_move
+
     def did_mount(self):
         self.update()
 
     def draw_looking_window(self, cursor_x, cursor_y):
+        # if self.cursor_shape:
         # При перемещении возвраать позицию в координатах изображения.
         # Подписать событие на перемещение курсора по окну.
         self.ft_canvas.shapes.clear()
@@ -54,23 +55,16 @@ class ImageViewer(ft.UserControl):
                         color=ft.colors.YELLOW,
                         stroke_width=2,
                         style=ft.PaintingStyle.STROKE,
-                    )))
+                    ))
+                    )
         self.ft_canvas.update()
         self.update()
-
-    # @property
-    # def on_resize(self) -> OptionalEventCallable["CanvasResizeEvent"]:
-    #     return self.__on_mouse_move.handler
-
-    # @on_resize.setter
-    # def on_resize(self, handler: OptionalEventCallable["CanvasResizeEvent"]):
-    #     self.__on_mouse_move.handler = handler
-    #     self._set_attr("on_mouse_move", True if handler is not None else None)
 
     def calc_image_cursor_position(self, x:float, y:float):
         self.cursor_position_x = int((x - self.img_pos_x) / self.scale_factor)
         self.cursor_position_y = int((y - self.img_pos_y) / self.scale_factor)
-        self._on_mouse_move(self.cursor_position_x, self.cursor_position_y)
+        if self.__on_mouse_move is not None:
+            self.__on_mouse_move(x=self.cursor_position_x, y=self.cursor_position_y)
         # передаем также размеры окна в параметрах изображения.
         # его можно как задать так и получить.
 
@@ -139,4 +133,5 @@ class ImageViewer(ft.UserControl):
             border_radius=5,
             width=float("inf"),
             expand=True,
+            # bgcolor=ft.colors.RED
         )

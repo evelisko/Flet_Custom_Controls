@@ -20,11 +20,12 @@ total_time = None
 frame_count = None
 is_video_play = False
 is_change_position = False
+files_list_opened = False
+video_window_width = 0
 
 # TODO: Реализовать в виде отдельного класса.
-
 def main(page: ft.Page):
-    page.padding = 50
+    page.padding = 5
     page.window.left = page.window.left + 100
     page.theme_mode = ft.ThemeMode.LIGHT
 
@@ -130,8 +131,46 @@ def main(page: ft.Page):
             is_video_play = True
         btn_play.update()
 
+    def move_vertical_divider(e: ft.DragUpdateEvent):
+        # if (e.delta_x > 0 and ft_row.width < 300) or (e.delta_x < 0 and ft_row.width > 100):
+        ft_row.width += e.delta_x
+        ft_row.update()
+
+    def show_draggable_cursor(e: ft.HoverEvent):
+        e.control.mouse_cursor = ft.MouseCursor.RESIZE_LEFT_RIGHT
+        e.control.update()
+
+    def show_playlist(e):
+        global files_list_opened
+        global video_window_width
+
+        if video_window_width == 0:
+            video_window_width = page.width - 200
+
+        if not files_list_opened:
+            files_list_opened = True
+            ft_row.expand = False
+            ft_row.width = video_window_width
+            gd.visible =True
+            cnt.visible = True
+        else:
+            files_list_opened = False
+            video_window_width = ft_row.width
+            ft_row.expand = True
+            gd.visible =False
+            cnt.visible = False
+        page.update()
+
     # Настекать кнопки.
     #================================================================
+    end_drawer = ft.NavigationDrawer(
+        position=ft.NavigationDrawerPosition.END,
+        controls=[
+            ft.NavigationDrawerDestination(icon=ft.icons.ADD_TO_HOME_SCREEN_SHARP, label="Item 1"),
+            ft.NavigationDrawerDestination(icon=ft.icons.ADD_COMMENT, label="Item 2"),
+        ],
+    )
+
     sldr_time_bar = ft.Slider(
                         min=0, max=1000,
                         divisions=1000,
@@ -141,34 +180,83 @@ def main(page: ft.Page):
                         thumb_color=ft.colors.PURPLE,
                         expand=True, 
                         on_change=slider_changed)
+
     btn_play = ft.IconButton(
         icon=ft.icons.PLAY_ARROW, on_click=play_button_clicked, data=0
     )
-    btn_play_list = ft.IconButton(
-        icon=ft.icons.MENU  # on_click=play_button_clicked, data=0
+    btn_next_video=ft.IconButton(
+        icon=ft.icons.SKIP_NEXT_ROUNDED,# on_click=play_button_clicked, data=0
     )
+    btn_prev_video = ft.IconButton(
+        icon=ft.icons.SKIP_PREVIOUS_ROUNDED, #on_click=play_button_clicked, data=0
+    )
+    btn_play_model_config = ft.IconButton(
+        icon=ft.icons.MENU, on_click=lambda e: page.open(end_drawer)
+    )
+    btn_play_list = ft.IconButton(
+        icon=ft.icons.MENU, on_click=show_playlist
+    )    
+    btn_open_video = ft.IconButton(
+                            icon=ft.icons.FILE_UPLOAD_OUTLINED,
+                            on_click=on_click,  # lambda _: pick_files_dialog.pick_files(allow_multiple=True)
+                            tooltip='Open File'# ft.Tooltip..TooltipValue 
+                        )
     ft_time_line_value = ft.Text(value='00:00:00/00:00:00')  
     ft_play_track_coontainer = ft.Container(content=ft.Row(
-        controls=[btn_play, sldr_time_bar, ft_time_line_value, btn_play_list], 
+        controls=[btn_prev_video, btn_play, btn_next_video, sldr_time_bar, ft_time_line_value, btn_play_list, btn_open_video], 
         expand=True, 
         alignment=ft.alignment.center_right
         ),
-        bgcolor=ft.colors.RED
+        # bgcolor=ft.colors.RED
         )
     #================================================================
     pick_files_dialog = ft.FilePicker(on_result=pick_files_result)
     page.overlay.append(pick_files_dialog)
     img_viewer = ImageViewer(on_mouse_move=on_image_viewer_mouse_move)
-    tf_page_size = ft.TextField(value='')
-    btn = ft.ElevatedButton('Open File',
-                            icon=ft.icons.UPLOAD_FILE,
-                            on_click=on_click  # lambda _: pick_files_dialog.pick_files(allow_multiple=True)
-                        )
-    ft_row = ft.Column([img_viewer, tf_page_size, btn, ft_play_track_coontainer], expand=True)
+    tf_page_size = ft.TextField(value='', expand=True)
 
+    ft_row = ft.Column([img_viewer, ft.Row([tf_page_size]), ft_play_track_coontainer],
+                        # width = page.width-10
+                        expand=True
+                        )
     # Перенос видео через drug & drop.
-    page.add(ft_row)
+    #====================================================================
+    lv = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
+
+    count = 1
+    for i in range(0, 5):
+        lv.controls.append(ft.Text(f"Line {count}"))
+        count += 1
+
+    gd = ft.GestureDetector(
+                content=ft.VerticalDivider(),
+                drag_interval=10,
+                on_pan_update=move_vertical_divider,
+                on_hover=show_draggable_cursor,
+                visible=False
+            )
+    cnt = ft.Container(
+                content=lv,
+                bgcolor=ft.colors.BROWN_400,
+                alignment=ft.alignment.center,
+                expand=1,
+                visible= False
+            )
+    x_row = ft.Row(
+        controls=[
+           ft_row,
+           gd,
+           cnt
+        ],
+        spacing=0,
+        expand=True
+        # width=400,
+        # height=400,
+    )
+    #====================================================================
+    page.add(x_row)
     page.on_resized = on_page_resize
+    
 
 if __name__ == '__main__':
     ft.app(target=main)
