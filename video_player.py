@@ -37,21 +37,15 @@ def main(page: ft.Page):
 
         # Метод для заполнения списка файлов.
     def read_files_list(files: List[FilePickerFile]):
-        # lv.controls = None
-        # lv.controls = list(map(lambda x: ft.CupertinoListTile(title=ft.Text(x.name),
-        #                                                        bgcolor_activated=ft.colors.AMBER_ACCENT,
-        #                                                        on_click=on_file_list_click,
-        #                                                        padding=1), files))
-        
-        dt_files.rows=list(map(lambda x: ft.DataRow(
+        dt_files.rows = []
+        dt_files.rows = list(map(lambda x: ft.DataRow(
                                 cells=[
-                                    ft.DataCell(ft.Text("1")),
-                                    ft.DataCell(ft.Text(x.name)),
-                                    # ft.DataCell(ft.Text("43")),
+                                    ft.DataCell(ft.Text(x[0])),
+                                    ft.DataCell(ft.Text(x[1].name))
                                 ],
                     selected=True,
-                    on_select_changed=lambda e: print(f"row select changed: {e.data}"),
-                ), files ))
+                    on_select_changed=on_file_list_click, #lambda e: print(f"row select changed: {e.data}"),
+                ), enumerate(files) ))
         
 
         dt_files.update()
@@ -214,10 +208,10 @@ def main(page: ft.Page):
         icon=ft.icons.PLAY_ARROW, on_click=play_button_clicked, data=0
     )
     btn_next_video=ft.IconButton(
-        icon=ft.icons.SKIP_NEXT_ROUNDED,# on_click=play_button_clicked, data=0
+        icon=ft.icons.SKIP_NEXT_ROUNDED,  # on_click=play_button_clicked, data=0
     )
     btn_prev_video = ft.IconButton(
-        icon=ft.icons.SKIP_PREVIOUS_ROUNDED, #on_click=play_button_clicked, data=0
+        icon=ft.icons.SKIP_PREVIOUS_ROUNDED,  # on_click=play_button_clicked, data=0
     )
     btn_play_model_config = ft.IconButton(
         icon=ft.icons.MENU, on_click=lambda e: page.open(end_drawer)
@@ -228,7 +222,7 @@ def main(page: ft.Page):
     btn_open_video = ft.IconButton(
                             icon=ft.icons.FILE_UPLOAD_OUTLINED,
                             on_click=on_click,  # lambda _: pick_files_dialog.pick_files(allow_multiple=True)
-                            tooltip='Open File'# ft.Tooltip..TooltipValue 
+                            tooltip='Open File'  # ft.Tooltip..TooltipValue 
                         )
     ft_time_line_value = ft.Text(value='00:00:00/00:00:00')  
     ft_play_track_coontainer = ft.Container(content=ft.Row(
@@ -250,18 +244,47 @@ def main(page: ft.Page):
                         )
     # Перенос видео через drug & drop.
     #====================================================================
-  
-    # lv = ft.ListView(expand=1, spacing=5, padding=5, auto_scroll=True, item_extent=2)
     dt_files = ft.DataTable(
-            columns=[
-                ft.DataColumn(ft.Text("id")),
-                ft.DataColumn(ft.Text("Name")),
-                # ft.DataColumn(ft.Text("time"),  numeric=True),
-            ],
-            rows=[],
-            selected=True,
-            on_select_changed=lambda e: print(f"row select changed: {e.data}"),
-                ),
+                  columns=[
+                        ft.DataColumn(ft.Text("id")),
+                        ft.DataColumn(ft.Text("Name"))
+                      ],
+                  rows=[
+                    # ft.DataRow(
+                    #     cells=[
+                    #         ft.DataCell(ft.Text("1")),
+                    #         ft.DataCell(ft.Text("dhdhfhfbbvhjfdfhjfdbfSmith"))
+                    #         ],
+                    #         selected=True,
+                    #         on_select_changed=lambda e: print(f"row select changed: {e.data}"),
+                    #     ),
+                    # ft.DataRow(
+                    #     cells=[
+                    #         ft.DataCell(ft.Text("2")),
+                    #         ft.DataCell(ft.Text("Brown"))
+                    #     ],
+                    #     selected=True,
+                    #     on_select_changed=lambda e: print(f"row select changed: {e.data}"),
+                    # ),
+                    # ft.DataRow(
+                    #     cells=[
+                    #         ft.DataCell(ft.Text("3")),
+                    #         ft.DataCell(ft.Text("Wong"))
+                    #     ],
+                    #     selected=True,
+                    #     on_select_changed=lambda e: print(f"row select changed: {e.data}"),
+                    #     ),
+                    ],
+
+#                     on_select_changed
+#                     selected
+# Выбрана ли строка.
+
+# Если on_select_changed не равно нулю для какой-либо строки в таблице, то в начале каждой строки отображается флажок. Если строка выбрана (True), флажок будет установлен, а строка выделена.
+
+# В противном случае флажок, если он присутствует, не будет установлен.
+                )
+
     gd = ft.GestureDetector(
                 content=ft.VerticalDivider(),
                 drag_interval=10,
@@ -271,21 +294,19 @@ def main(page: ft.Page):
             )
     cnt = ft.Container(
                 content=dt_files,
-                bgcolor=ft.colors.AMBER_100,
-                alignment=ft.alignment.center,
-                expand=1,
-                visible= False
+                # bgcolor='#53765f',
+                alignment=ft.alignment.top_left,
+                expand=True,
+                visible=False
             )
     x_row = ft.Row(
-        controls=[
-           ft_row,
-           gd,
-           cnt
-        ],
+            controls=[
+                    ft_row,
+                    gd,
+                    cnt
+            ],
         spacing=0,
         expand=True
-        # width=400,
-        # height=400,
     )
     #====================================================================
     page.add(x_row)
