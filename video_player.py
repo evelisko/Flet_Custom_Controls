@@ -189,8 +189,43 @@ def main(page: ft.Page):
     end_drawer = ft.NavigationDrawer(
         position=ft.NavigationDrawerPosition.END,
         controls=[
-            ft.NavigationDrawerDestination(icon=ft.icons.ADD_TO_HOME_SCREEN_SHARP, label="Item 1"),
-            ft.NavigationDrawerDestination(icon=ft.icons.ADD_COMMENT, label="Item 2"),
+            # Выбор файла с моделью.
+            ft.Row([ 
+                ft.ElevatedButton('Load model'),
+                ft.ListTile(
+                        leading=ft.Icon(ft.icons.ALBUM),
+                        title=ft.Text("Model Name"),
+                        # subtitle=ft.Text(
+                        #     "Music by Julie Gable. Lyrics by Sidney Stein."
+                        )]
+                    ),
+            # предсказывать или нет вообще.
+            ft.Switch('Show predicts'),       
+            # использовать или нет динамический порог.
+            ft.Divider(),
+            ft.Switch('Dinamic Confidence'),
+            
+            # движок для установки порога.
+            ft.Slider(min=0, max=100,
+                        divisions=100,
+                        label="{value}", 
+                        active_color=ft.colors.PURPLE,
+                        secondary_active_color=ft.colors.RED,
+                        thumb_color=ft.colors.PURPLE,
+                        expand=True, 
+                        # on_change=slider_changed
+                        ),
+            ft.Divider(),
+            # отображать или нет рамку.
+            ft.Switch('View crop border'),
+
+            # Отображать или нет курсор.
+
+            # Настройка яркости и контрастности.
+            # предсказывать или нет вообще.
+            # ft.NavigationDrawerDestination(icon=ft.icons.ADD_TO_HOME_SCREEN_SHARP, label="Item 1"),
+            # ft.NavigationDrawerDestination(icon=ft.icons.ADD_COMMENT, label="Item 2"),
+            # ft.ElevatedButton('Hello'),
         ],
     )
 
@@ -213,8 +248,8 @@ def main(page: ft.Page):
     btn_prev_video = ft.IconButton(
         icon=ft.icons.SKIP_PREVIOUS_ROUNDED,  # on_click=play_button_clicked, data=0
     )
-    btn_play_model_config = ft.IconButton(
-        icon=ft.icons.MENU, on_click=lambda e: page.open(end_drawer)
+    btn_settings = ft.IconButton(
+        icon=ft.icons.SETTINGS, on_click=lambda e: page.open(end_drawer)
     )
     btn_play_list = ft.IconButton(
         icon=ft.icons.MENU, on_click=show_playlist
@@ -226,7 +261,7 @@ def main(page: ft.Page):
                         )
     ft_time_line_value = ft.Text(value='00:00:00/00:00:00')  
     ft_play_track_coontainer = ft.Container(content=ft.Row(
-        controls=[btn_prev_video, btn_play, btn_next_video, sldr_time_bar, ft_time_line_value, btn_play_list, btn_open_video], 
+        controls=[btn_prev_video, btn_play, btn_next_video, sldr_time_bar, ft_time_line_value, btn_open_video, btn_play_list, btn_settings], 
         expand=True, 
         alignment=ft.alignment.center_right
         ),
