@@ -10,46 +10,43 @@ from flet_core.file_picker import FilePickerFile
 import flet.canvas as cv
 import numpy as np
 from image_viewer import ImageViewer
+from setting_panel import SettingsPanelNavigationDrawer
 
 
-class SettingsPanelNavigationDrawer(ft.NavigationDrawer):
-    def __init__(self):
-        super().__init__()
-        self.btn_open_model = ft.ElevatedButton('Load model')
-        self.lst_model_name = ft.ListTile(
-                            leading=ft.Icon(ft.icons.ALBUM),
-                            title=ft.Text("Model Name"),
-                            )
-        self.swh_show_predicts = ft.Switch('Show predicts')
-        self.swh_use_dinamic_confidence = ft.Switch('Dinamic Confidence')
-        self.sldr_confidence_value = ft.Slider(min=0, max=100,
-                            divisions=100,
-                            label="{value}", 
-                            active_color=ft.colors.PURPLE,
-                            secondary_active_color=ft.colors.RED,
-                            thumb_color=ft.colors.PURPLE,
-                            expand=True, 
-                            # on_change=slider_changed  # Что-то надо делать с обработкой событий.
-                            ),
-        self.swh_view_crop_border = ft.Switch('View crop border')
+# class SettingsPanelNavigationDrawer(ft.NavigationDrawer):
+#     def __init__(self):
+#         super().__init__()
+#         self.btn_open_model = ft.ElevatedButton('Load model')
+#         self.lst_model_name = ft.ListTile(
+#                             leading=ft.Icon(ft.icons.ALBUM),
+#                             title=ft.Text("Model Name"),
+#                             )
+#         self.swh_show_predicts = ft.Switch('Show predicts')
+#         self.swh_use_dinamic_confidence = ft.Switch('Dinamic Confidence')
+#         self.sldr_confidence_value = ft.Slider(min=0, max=100,
+#                             divisions=100,
+#                             label="{value}", 
+#                             active_color=ft.colors.PURPLE,
+#                             secondary_active_color=ft.colors.RED,
+#                             thumb_color=ft.colors.PURPLE,
+#                             expand=True, 
+#                             # on_change=slider_changed  # Что-то надо делать с обработкой событий.
+#                             )
+#         self.swh_view_crop_border = ft.Switch('View crop border')
 
-    # Настекать кнопки.
-    #================================================================
-    def build(self):
-        return ft.NavigationDrawer( # Сделать компоненет на основе этого.
-            position=ft.NavigationDrawerPosition.END,
-            controls=[
-                ft.Row([ 
-                        self.btn_open_model,
-                        self.lst_model_name
-                    ]),
-                    self.swh_show_predicts,
-                    ft.Divider(),
-                    self.swh_use_dinamic_confidence,
-                    ft.Divider(),
-                    self.swh_view_crop_border
-            ],
-        )
+#         self.position=ft.NavigationDrawerPosition.END
+#         self.controls=[
+#                 ft.Row([ 
+#                         self.btn_open_model,
+#                         self.lst_model_name
+#                     ]),
+#                     self.swh_show_predicts,
+#                     self.sldr_confidence_value,
+#                     ft.Divider(),
+#                     self.swh_use_dinamic_confidence,
+#                     ft.Divider(),
+#                     self.swh_view_crop_border
+#             ]
 
     # def did_mount(self):
     #     self.update()
@@ -224,50 +221,7 @@ def main(page: ft.Page):
             cnt.visible = False
         page.update()
 
-    # Настекать кнопки.
-    #================================================================
-    # end_drawer = ft.NavigationDrawer(
-    #     position=ft.NavigationDrawerPosition.END,
-    #     controls=[
-    #         # Выбор файла с моделью.
-    #         ft.Row([ 
-    #             ft.ElevatedButton('Load model'),
-    #             ft.ListTile(
-    #                     leading=ft.Icon(ft.icons.ALBUM),
-    #                     title=ft.Text("Model Name"),
-    #                     # subtitle=ft.Text(
-    #                     #     "Music by Julie Gable. Lyrics by Sidney Stein."
-    #                     )]
-    #                 ),
-    #         # предсказывать или нет вообще.
-    #         ft.Switch('Show predicts'),       
-    #         # использовать или нет динамический порог.
-    #         ft.Divider(),
-    #         ft.Switch('Dinamic Confidence'),
-            
-    #         # движок для установки порога.
-    #         ft.Slider(min=0, max=100,
-    #                     divisions=100,
-    #                     label="{value}", 
-    #                     active_color=ft.colors.PURPLE,
-    #                     secondary_active_color=ft.colors.RED,
-    #                     thumb_color=ft.colors.PURPLE,
-    #                     expand=True, 
-    #                     # on_change=slider_changed
-    #                     ),
-    #         ft.Divider(),
-    #         # отображать или нет рамку.
-    #         ft.Switch('View crop border'),
-
-    #         # Отображать или нет курсор.
-
-    #         # Настройка яркости и контрастности.
-    #         # предсказывать или нет вообще.
-    #         # ft.NavigationDrawerDestination(icon=ft.icons.ADD_TO_HOME_SCREEN_SHARP, label="Item 1"),
-    #         # ft.NavigationDrawerDestination(icon=ft.icons.ADD_COMMENT, label="Item 2"),
-    #         # ft.ElevatedButton('Hello'),
-    #     ],
-    # )
+    end_drawer = SettingsPanelNavigationDrawer()
 
     sldr_time_bar = ft.Slider(
                         min=0, max=1000,
@@ -289,7 +243,7 @@ def main(page: ft.Page):
         icon=ft.icons.SKIP_PREVIOUS_ROUNDED,  # on_click=play_button_clicked, data=0
     )
     btn_settings = ft.IconButton(
-        icon=ft.icons.SETTINGS, on_click=lambda e: page.open(SettingsPanelNavigationDrawer())
+        icon=ft.icons.SETTINGS, on_click=lambda e: page.open(end_drawer)
     )
     btn_play_list = ft.IconButton(
         icon=ft.icons.MENU, on_click=show_playlist
