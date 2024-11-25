@@ -63,9 +63,9 @@ def main(page: ft.Page):
             current_frame = 0
             is_new = True
             video_viewer.open_file(file_name=file_name) # Возвращает к-во кадров в видео или статус открытия видео.
-            frame_count = video_viewer.get_frames_count()
-            sldr_time_bar.max = frame_count
-            sldr_time_bar.divisions = frame_count
+
+                        # sldr_time_bar.max = int(frame_count)
+            # sldr_time_bar.divisions = int(frame_count)
 
 
             # if capture:
@@ -78,11 +78,11 @@ def main(page: ft.Page):
             # latency = 1 / capture.get(cv2.CAP_PROP_FPS)
             # frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
             # # capture.set(cv2.CAP_PROP_POS_FRAMES, 100)
-            is_video_play = True
-            btn_play.icon = ft.icons.PAUSE
+            # is_video_play = True
+            # btn_play.icon = ft.icons.PAUSE
             # sldr_time_bar.max = int(frame_count)
             # sldr_time_bar.divisions = int(frame_count)
-            # total_time = time_to_str(c * latency) 
+            # total_time = time_to_str(frame_count * latency) 
             # print(total_time)
             # if is_new:
             #     thread = threading.Thread(target=update_frame, args=(), daemon=True)
@@ -145,12 +145,14 @@ def main(page: ft.Page):
         page.update()
 
     def slider_changed(e):
-        # global is_change_position
-        # current_frame = int(e.control.value)
-        # is_change_position = True
+        global capture
+        global latency
+        global current_frame
+        global is_change_position
+        current_frame = int(e.control.value)
+        is_change_position = True
         # capture.set(cv2.CAP_PROP_POS_FRAMES, int(e.control.value))
-        sldr_time_bar.label = time_to_str(e.control.value * video_viewer.get_frame_rate())
-        video_viewer.set_current_frame_index(int(e.control.value))
+        sldr_time_bar.label = time_to_str(e.control.value * latency)
 
     def play_button_clicked(e):
         global is_video_play
@@ -160,7 +162,6 @@ def main(page: ft.Page):
         else:
             btn_play.icon = ft.icons.PAUSE
             is_video_play = True
-        video_viewer.change_play_status(is_video_play)
         btn_play.update()
 
     def move_vertical_divider(e: ft.DragUpdateEvent):
