@@ -9,8 +9,8 @@ from datetime import datetime, timedelta, timezone
 from flet_core.file_picker import FilePickerFile
 import flet.canvas as cv
 import numpy as np
-from image_viewer import ImageViewer
-from setting_panel import SettingsPanelNavigationDrawer
+from controls.image_viewer import ImageViewer
+from controls.setting_panel import SettingsPanelNavigationDrawer
 
 # current_frame = 0
 # capture = None

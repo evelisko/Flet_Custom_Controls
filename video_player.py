@@ -9,8 +9,8 @@ from datetime import datetime, timedelta, timezone
 from flet_core.file_picker import FilePickerFile
 import flet.canvas as cv
 import numpy as np
-from video_viewer import VideoViewer
-from setting_panel import SettingsPanelNavigationDrawer
+from controls.video_viewer import VideoViewer
+from controls.setting_panel import SettingsPanelNavigationDrawer
 
 
 class MainControl(ft.UserControl):

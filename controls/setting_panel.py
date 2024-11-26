@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 from flet_core.file_picker import FilePickerFile
 import flet.canvas as cv
 import numpy as np
-from image_viewer import ImageViewer
+from controls.image_viewer import ImageViewer
 
 
 class SettingsPanelNavigationDrawer(ft.NavigationDrawer):

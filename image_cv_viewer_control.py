@@ -4,7 +4,7 @@ import base64
 import flet as ft
 import flet.canvas as cv
 import numpy as np
-from image_viewer import ImageViewer
+from controls.image_viewer import ImageViewer
 
 
 files_directory = ''

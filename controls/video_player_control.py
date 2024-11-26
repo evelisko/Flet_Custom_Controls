@@ -10,7 +10,7 @@ from time import sleep
 from datetime import datetime, timedelta, timezone
 import flet.canvas as cv
 import numpy as np
-from image_viewer import ImageViewer
+from controls.image_viewer import ImageViewer
 
 class VideoPlayer(ft.UserControl):
     def __init__(self, on_mouse_move):

@@ -1,5 +1,5 @@
 import flet as ft
-from capture_control import CameraCaptureControl
+from experiments.capture_control import CameraCaptureControl
 
 def main(page: ft.Page):
     page.padding = 50
