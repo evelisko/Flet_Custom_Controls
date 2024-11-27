@@ -8,12 +8,20 @@ def main(page: ft.Page):
     page.theme_mode = ft.ThemeMode.DARK
 
     def on_file_list_click( e): # 8ec182
-        print(e.control.cells[0].data, '|', e.control.cells[1].data)
-        # print(e.control.parent.item_extent)
+        tf_selected_value.value = f'{e.control.cells[0].data} | {e.control.cells[1].data}'
+        # e.control.selected = 
+        page.update()
+        # print(e.control.parent.item_extent) # Еще но так - e.control._DataRow__cells[1].content.value
 
     # Поиск.
     # Перелистывание следующе.
     # Выбор.  
+
+    def on_prev_click(e):
+        pass
+
+    def on_next_click(e):
+        pass
 
     files_list = [
             'Hellboj.Geroj.iz.Pekla.2004.D.BDRip.1.46Gb_ExKinoRay_by_Twi7ter.avi',
@@ -46,7 +54,19 @@ def main(page: ft.Page):
                 on_select_changed=on_file_list_click, #lambda e: print(f"row select changed: {e.data}"),
             ), enumerate(files_list) ))
     
-    page.add(dt_files)
+    tf_selected_value = ft.TextField(value='')
+
+    next_prev = ft.Row([
+        ft.IconButton(icon=ft.icons.NAVIGATE_BEFORE,
+                      on_click=on_prev_click
+                      ),
+        ft.IconButton(icon=ft.icons.NAVIGATE_NEXT,
+                      on_click=on_next_click
+                      )
+                ])
+
+
+    page.add(ft.Column([dt_files, tf_selected_value, next_prev]))
 
 
 if __name__ == '__main__':
