@@ -59,7 +59,6 @@ class PlayList(ft.UserControl):
         else:
             return None
 
-
     def prev_file(self): # Возвращаем none если дошли до конца.
         if self.selected_index > 0:
             self.dt_files.rows[self.selected_index].selected = False

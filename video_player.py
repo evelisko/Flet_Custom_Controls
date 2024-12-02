@@ -116,9 +116,9 @@ class MainControl(ft.UserControl):
         self.tf_page_size.value = value
 
         # Метод для заполнения списка файлов.
-    def read_files_list(self, files: List[FilePickerFile]):
-        file_names = list(map(lambda x: x.name, files))
-        self.play_list.load_playlist(file_names)
+    # def read_files_list(self, files: List[FilePickerFile]):
+    #     file_names = list(map(lambda x: x.name, files))
+    #     self.play_list.load_playlist(file_names)
 
     def pick_files_result(self, e: ft.FilePickerResultEvent):
         #--------------------------------------------------------------------------
@@ -127,7 +127,8 @@ class MainControl(ft.UserControl):
         # ) #Здесь сделаем вызов события потому передающего запись в заголовок окна.
         #--------------------------------------------------------------------------
         if e.files:
-            self.read_files_list(e.files)
+            file_names = list(map(lambda x: [x.name, os.path.split(x.path)[0]], e.files))
+            self.play_list.load_playlist(file_names)
             file_name = e.files[0].path
             self.video_viewer.open_file(file_name=file_name) # Возвращает к-во кадров в видео или статус открытия видео.
             frame_count = self.video_viewer.get_frames_count()
