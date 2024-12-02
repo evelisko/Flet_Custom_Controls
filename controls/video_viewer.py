@@ -24,6 +24,8 @@ from controls.setting_panel import SettingsPanelNavigationDrawer
 # video_window_width = 0
 
 # TODO: Реализовать в виде отдельного класса.
+
+# Отлавливаем состояние плеера. если он прстоаивает то выходим из потока. потом можно его запустить заново.
 class VideoViewer(ImageViewer): # Унаследовать компонент от image_viewer
     def __init__(self, update_frame_index=None):
         super().__init__()
@@ -73,15 +75,21 @@ class VideoViewer(ImageViewer): # Унаследовать компонент о
     def get_frame_rate(self):
         return self.latency
 
-    def play_video_status(self):
-        # Возвращаем статус видео. воспроизведение или пауза.
-        pass
+    
+    # def play_video_status(self):
+    #     # Возвращаем статус видео. воспроизведение или пауза.
+    #     pass
 
-    def get_video_status(self):
+    @property    
+    def play_video_status(self):
         self.is_video_play
 
-    def change_play_status(self, status: bool):
+    @play_video_status.setter
+    def play_video_status(self, status: bool):
         self.is_video_play = status
+        if status:
+            self.run_thread()
+
 
     def time_to_str(self, seconds: float):
         dtime = timedelta(seconds = seconds)
@@ -105,28 +113,23 @@ class VideoViewer(ImageViewer): # Унаследовать компонент о
     def open_file(self, file_name: str):
         if file_name:
             self.current_frame = 0
-            is_new = True
             if self.capture:
                 if self.capture.isOpened():
                     self.capture.release()
                     self.capture=None
-                    self.is_new = False
-                    # thread.stop()
+                    sleep(0.1)
             self.capture = cv2.VideoCapture(file_name)
             self.latency = 1 / self.capture.get(cv2.CAP_PROP_FPS)
             self.frame_count = int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
-            # capture.set(cv2.CAP_PROP_POS_FRAMES, 100)
             self.is_video_play = True
-            # btn_play.icon = ft.icons.PAUSE
-            # if self.sldr_time_bar:
-            #     self.sldr_time_bar.max = int(self.frame_count)
-            #     self.sldr_time_bar.divisions = int(self.frame_count)
             self.total_time = self.time_to_str(self.frame_count * self.latency) 
-            # print(total_time)
-            if is_new:
-                thread = threading.Thread(target=self.update_frame, args=(), daemon=True)
-                thread.start()
+            self.run_thread()
         self.update()
+
+    def run_thread(self):
+        thread = threading.Thread(target=self.update_frame, args=(), daemon=True)
+        thread.start()
+
         # page.update()
 
     # def on_click(e):
@@ -142,23 +145,21 @@ class VideoViewer(ImageViewer): # Унаследовать компонент о
         # TODO: https://all-python.ru/osnovy/threading.html
         # Реализовать просмотр и перемотку.
         while self.current_frame < self.frame_count:
-            if self.capture: # Проверка что открыт новый файл.
-                if self.is_video_play:
-                    start_time = datetime.now()
-                    if self.is_change_position:
-                        self.capture.set(cv2.CAP_PROP_POS_FRAMES, int(self.current_frame))
-                        self.is_change_position = False
-                    retval, frame = self.capture.read()
-                    self.read_image(frame)
-                    if self._on_update_frame_index is not None:
-                        self._on_update_frame_index(self.current_frame)
-                    self.current_time = self.time_to_str(self.current_frame*self.latency)
-                    self.current_frame += 1
-                    d_time = datetime.now() - start_time
+            if self.is_video_play and self.capture: # Проверка что открыт новый файл.
+                start_time = datetime.now()
+                if self.is_change_position:
+                    self.capture.set(cv2.CAP_PROP_POS_FRAMES, int(self.current_frame))
+                    self.is_change_position = False
+                retval, frame = self.capture.read()
+                self.read_image(frame)
+                if self._on_update_frame_index is not None:
+                    self._on_update_frame_index(self.current_frame)
+                self.current_time = self.time_to_str(self.current_frame*self.latency)
+                self.current_frame += 1
+                d_time = datetime.now() - start_time
                 if d_time.microseconds/1000000 < self.latency and d_time.microseconds > 0.0:
-                   sleep(self.latency - d_time.microseconds/1000000) # Здесь необходимо замерять время между вызовами, и если и ожидать только разницу.
-                # sleep(self.latency)
+                   sleep(self.latency - d_time.microseconds/1000000)
             else:
-                break
+                return
         if self.capture:
             self.capture.release()

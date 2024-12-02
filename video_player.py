@@ -114,18 +114,16 @@ class MainControl(ft.UserControl):
     def on_file_list_click(self, value): # 8ec182
         print(value)
         self.tf_page_size.value = value
+        self.is_video_play = True
+        self.video_viewer.play_video_status = self.is_video_play
+        self.video_viewer.open_file(value)
 
-        # Метод для заполнения списка файлов.
+    # Метод для заполнения списка файлов.
     # def read_files_list(self, files: List[FilePickerFile]):
     #     file_names = list(map(lambda x: x.name, files))
     #     self.play_list.load_playlist(file_names)
 
     def pick_files_result(self, e: ft.FilePickerResultEvent):
-        #--------------------------------------------------------------------------
-        # page.title  = (
-        #     ", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!"
-        # ) #Здесь сделаем вызов события потому передающего запись в заголовок окна.
-        #--------------------------------------------------------------------------
         if e.files:
             file_names = list(map(lambda x: [x.name, os.path.split(x.path)[0]], e.files))
             self.play_list.load_playlist(file_names)
@@ -151,6 +149,10 @@ class MainControl(ft.UserControl):
 
 
     def on_click(self, e):
+        self.btn_play.icon = ft.icons.PLAY_ARROW
+        self.is_video_play = False
+        self.video_viewer.play_video_status = self.is_video_play
+        self.btn_play.update()
         self.pick_files_dialog.pick_files(allow_multiple=True)
 
     def slider_changed(self, e):
@@ -164,18 +166,21 @@ class MainControl(ft.UserControl):
         else:
             self.btn_play.icon = ft.icons.PAUSE
             self.is_video_play = True
-        self.video_viewer.change_play_status(self.is_video_play)
+        self.video_viewer.play_video_status = self.is_video_play
         self.btn_play.update()
 
     def play_next_video_cliked(self, e):
         value = self.play_list.next_file()
         if value:
             self.tf_page_size.value = value
+            self.video_viewer.open_file(value)
 
     def play_prev_video_cliked(self, e):
         value = self.play_list.prev_file()
         if value:
             self.tf_page_size.value = value
+            # self.video_viewer.play_video_status= False
+            self.video_viewer.open_file(value)
 
 
     def move_vertical_divider(self, e: ft.DragUpdateEvent):
