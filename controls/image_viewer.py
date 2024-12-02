@@ -77,25 +77,30 @@ class ImageViewer(ft.UserControl):
         self.draw_looking_window(e.local_x, e.local_y)
 
     def update_image(self):
-        scale_y = self.size.height / self.img_size.height
-        scale_x = self.size.width / self.img_size.width
+        width = self.size.width
+        height = self.size.height
+        scale_y = height / self.img_size.height
+        scale_x = width / self.img_size.width
+
         self.scale_factor = scale_x if scale_x < scale_y else scale_y
         new_width = int(self.img_size.width * self.scale_factor)
         new_height = int(self.img_size.height * self.scale_factor)
 
-        new_width = new_width if new_width <= self.size.width else self.size.width
-        new_height = new_height if new_height <= self.size.height else self.size.height
+        new_width = new_width if new_width <= width else width
+        new_height = new_height if new_height <= height else height
         new_img = cv2.resize(self.img, (new_width, new_height))
-        self.img_pos_y = int((self.size.height - new_height) / 2)
-        self.img_pos_x = int((self.size.width - new_width) / 2)
-        background = np.zeros((int(self.size.height), int(self.size.width), 3))
-        background[self.img_pos_y:self.img_pos_y + new_img.shape[0],
-        self.img_pos_x:self.img_pos_x + new_img.shape[1]] = new_img
-        _, im_arr = cv2.imencode('.jpg', background)
-        im_b64 = base64.b64encode(im_arr).decode('utf-8')
-        self.ft_img.src_base64 = im_b64
-        self.ft_canvas.update()
-        self.update()
+        self.img_pos_y = int((height - new_height) / 2)
+        self.img_pos_x = int((width - new_width) / 2)
+        background = np.zeros((int(height), int(width), 3))
+        try:
+            background[self.img_pos_y:self.img_pos_y + new_img.shape[0], self.img_pos_x:self.img_pos_x + new_img.shape[1]] = new_img
+            _, im_arr = cv2.imencode('.jpg', background)
+            im_b64 = base64.b64encode(im_arr).decode('utf-8')
+            self.ft_img.src_base64 = im_b64
+            self.ft_canvas.update()
+            self.update()
+        except Exception as ex:
+            print(ex)
 
     def read_image(self, image: np.ndarray):
         self.img = image

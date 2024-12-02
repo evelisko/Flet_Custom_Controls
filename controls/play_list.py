@@ -30,8 +30,8 @@ class PlayList(ft.UserControl):
                                     ft.DataCell(ft.Text(x[0]), data=x[0], visible=False),
                                     ft.DataCell(ft.Text(x[1]), data=x[1])
                                 ],
-                    # color= ft.colors.AMBER_700,
-                    selected=True,
+                    # color= ft.colors.LIGHT_GREEN_900,
+                    selected=False,
                     on_select_changed=self.on_file_list_click,
                 ), enumerate(files_list)))
         self.update()
@@ -45,8 +45,11 @@ class PlayList(ft.UserControl):
     def next_file(self):
         if self.selected_index < len(self.dt_files.rows) - 1:
             self.dt_files.rows[self.selected_index].selected = False
+            # self.dt_files.rows[self.selected_index].color= None# ft.colors.LIGHT_GREEN_900,
             self.selected_index += 1
             self.dt_files.rows[self.selected_index].selected = True
+            # self.dt_files.rows[self.selected_index].color= ft.colors.LIGHT_GREEN_900
+            self.update()
             return self.dt_files.rows[self.selected_index].cells[1].data
             # self.on_selected_value = on_selected_value
             # надо еще выделять текущий и снимать выделение со всех осталных
@@ -59,6 +62,7 @@ class PlayList(ft.UserControl):
             self.dt_files.rows[self.selected_index].selected = False
             self.selected_index -= 1
             self.dt_files.rows[self.selected_index].selected = True
+            self.update()
             return self.dt_files.rows[self.selected_index].cells[1].data
             # self.on_selected_value = on_selected_value
         else:
@@ -70,24 +74,66 @@ class PlayList(ft.UserControl):
     def input_search(self, e):
         self.selected_index = 0
         search_name = self.name_input.value.lower()
-        myfiler = list(filter(lambda x:search_name in x.lower(), self.files_list))
-        if not self.name_input.value == "":
-            if len(myfiler) > 0 :
-                self.data_not_found.visible = False
-                self.update_playlist(myfiler)
-            else:
-                self.dt_files.rows = []
-                print("data not found")
-                self.data_not_found.visible = True
-                self.update()
+        if search_name:
+            myfiler = list(filter(lambda x:search_name in x.lower(), self.files_list))
+            if not self.name_input.value == "":
+                if len(myfiler) > 0:
+                    self.data_not_found.visible = False
+                    self.update_playlist(myfiler)
+                else:
+                    self.dt_files.rows = []
+                    print("data not found")
+                    self.data_not_found.visible = True
+                    self.update()       
+        else:
+             self.update_playlist(self.files_list)
+             self.update()
 
-    def on_file_list_click(self, e): # 8ec182
+    def on_file_list_click(self, e): 
+        self.dt_files.rows[self.selected_index].selected = False
         self.selected_index = int(e.control.cells[0].data)
         self.on_selected_value(f'{e.control.cells[0].data} | {e.control.cells[1].data}')
-        # self.update()
+        self.dt_files.rows[self.selected_index].selected = True
+        self.update()
 
     def build(self):
-        return ft.Container(content=ft.Column([self.name_input, self.dt_files, self.data_not_found]))
+        return ft.Container(content=ft.Column([self.name_input, self.dt_files, self.data_not_found],
+                                               scroll=ft.ScrollMode.ALWAYS,
+                                               expand=True
+                                               ),
+                                               alignment = ft.alignment.top_left,
+                                               expand=True,
+                                               padding=20,
+                                               theme=ft.Theme(
+        scrollbar_theme=ft.ScrollbarTheme(
+            thumb_visibility=True,
+        ))
+       )
+
+#   container_1 = ft.Container(ft.Column([
+#         ft.Container(tf_prompt, padding=5),
+#         ft.Container(tf_model, padding=5)
+#     ],
+#         alignment=ft.alignment.top_left,
+#         scroll=ft.ScrollMode.ALWAYS,
+#         expand=True,
+#     ),
+#         expand=True,
+#         alignment=ft.alignment.top_left,
+#     )
+
+    # container_2 = ft.Container(ft.Column([
+    #     ft.Text('На сколько вас устраивает качество сгенерированного текста?',
+    #             weight=ft.FontWeight.BOLD, size=14),
+    #     rg_choice_variant,
+    #     btn_next_pair,
+    #     ft.Container(tb_statistic, expand=True, alignment=ft.alignment.bottom_left)]),
+    #     theme=ft.Theme(
+    #     scrollbar_theme=ft.ScrollbarTheme(
+    #         thumb_visibility=True,
+    #     )),
+    #     expand=False,
+    #     padding=20)
 
 
 def main(page: ft.Page):

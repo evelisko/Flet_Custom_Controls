@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from flet_core.file_picker import FilePickerFile
 import flet.canvas as cv
 import numpy as np
+from controls.play_list import PlayList
 from controls.video_viewer import VideoViewer
 from controls.setting_panel import SettingsPanelNavigationDrawer
 
@@ -38,10 +39,10 @@ class MainControl(ft.UserControl):
             icon=ft.icons.PLAY_ARROW, on_click=self.play_button_clicked, data=0
         )
         self.btn_next_video=ft.IconButton(
-            icon=ft.icons.SKIP_NEXT_ROUNDED,  # on_click=play_button_clicked, data=0
+            icon=ft.icons.SKIP_NEXT_ROUNDED, on_click=self.play_next_video_cliked, data=0
         )
         self.btn_prev_video = ft.IconButton(
-            icon=ft.icons.SKIP_PREVIOUS_ROUNDED,  # on_click=play_button_clicked, data=0
+            icon=ft.icons.SKIP_PREVIOUS_ROUNDED, on_click=self.play_prev_video_cliked, data=0
         )
         self.btn_settings = ft.IconButton(
             icon=ft.icons.SETTINGS, on_click=lambda e: self.page.open(self.end_drawer)  # ^_^
@@ -74,13 +75,13 @@ class MainControl(ft.UserControl):
                             )
         # Перенос видео через drug & drop.
         #====================================================================
-        self.dt_files = ft.DataTable(
-                    columns=[
-                            ft.DataColumn(ft.Text("id")),
-                            ft.DataColumn(ft.Text("Name"))
-                        ],
-                    rows=[],
-                    )
+        # self.dt_files = ft.DataTable(
+        #             columns=[
+        #                     ft.DataColumn(ft.Text("id")),
+        #                     ft.DataColumn(ft.Text("Name"))
+        #                 ],
+        #             rows=[],
+        #             )
         self.gd = ft.GestureDetector(
                     content=ft.VerticalDivider(),
                     drag_interval=10,
@@ -88,18 +89,21 @@ class MainControl(ft.UserControl):
                     on_hover=self.show_draggable_cursor,
                     visible=False
                 )
-        self.cnt = ft.Container(
-                    content=self.dt_files,
-                    # bgcolor='#53765f',
-                    alignment=ft.alignment.top_left,
-                    expand=True,
-                    visible=False
-                )
+        # self.cnt = ft.Container(
+        #             content=self.dt_files,
+        #             # bgcolor='#53765f',
+        #             alignment=ft.alignment.top_left,
+        #             expand=True,
+        #             visible=False
+        #         )
+        self.play_list = PlayList(self.on_file_list_click) 
+        self.play_list.visible = False
+
         x_row = ft.Row(
                 controls=[
                         self.ft_row,
                         self.gd,
-                        self.cnt
+                        self.play_list
                 ],
             spacing=0,
             expand=True
@@ -107,22 +111,14 @@ class MainControl(ft.UserControl):
         return x_row
 
 
-    def on_file_list_click(self, e): # 8ec182
-        print(e.control.title.value)
-        print(e.control.parent.item_extent)
+    def on_file_list_click(self, value): # 8ec182
+        print(value)
+        self.tf_page_size.value = value
 
         # Метод для заполнения списка файлов.
     def read_files_list(self, files: List[FilePickerFile]):
-        self.dt_files.rows = []
-        self.dt_files.rows = list(map(lambda x: ft.DataRow(
-                                cells=[
-                                    ft.DataCell(ft.Text(x[0])),
-                                    ft.DataCell(ft.Text(x[1].name))
-                                ],
-                    selected=True,
-                    on_select_changed=self.on_file_list_click, #lambda e: print(f"row select changed: {e.data}"),
-                ), enumerate(files) ))
-        self.dt_files.update()
+        file_names = list(map(lambda x: x.name, files))
+        self.play_list.load_playlist(file_names)
 
     def pick_files_result(self, e: ft.FilePickerResultEvent):
         #--------------------------------------------------------------------------
@@ -170,6 +166,17 @@ class MainControl(ft.UserControl):
         self.video_viewer.change_play_status(self.is_video_play)
         self.btn_play.update()
 
+    def play_next_video_cliked(self, e):
+        value = self.play_list.next_file()
+        if value:
+            self.tf_page_size.value = value
+
+    def play_prev_video_cliked(self, e):
+        value = self.play_list.prev_file()
+        if value:
+            self.tf_page_size.value = value
+
+
     def move_vertical_divider(self, e: ft.DragUpdateEvent):
         self.ft_row.width += e.delta_x
         self.ft_row.update()
@@ -186,24 +193,23 @@ class MainControl(ft.UserControl):
             self.ft_row.expand = False
             self.ft_row.width = self.video_window_width
             self.gd.visible =True
-            self.cnt.visible = True
+            self.play_list.visible = True
         else:
             self.files_list_opened = False
             self.video_window_width = self.ft_row.width
             self.ft_row.expand = True
             self.gd.visible =False
-            self.cnt.visible = False
+            self.play_list.visible = False
         self.update()
 
 
 # TODO: Реализовать в виде отдельного класса.
 def main(page: ft.Page):
-    page.add(MainControl()) # Вызов события и параметров контрола.
     # page.on_resized = on_page_resize
     page.padding = 5
     page.window.left = page.window.left + 100
     page.theme_mode = ft.ThemeMode.LIGHT
-    
+    page.add(MainControl()) # Вызов события и параметров контрола.
 
 if __name__ == '__main__':
     ft.app(target=main)
