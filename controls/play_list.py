@@ -1,3 +1,4 @@
+import os
 import flet as ft
 from typing import List
 
@@ -11,7 +12,8 @@ class PlayList(ft.UserControl):
         self.dt_files = ft.DataTable(
                     columns=[
                             ft.DataColumn(ft.Text("id"), visible=False),
-                            ft.DataColumn(ft.Text("Name"), disabled=True)
+                            ft.DataColumn(ft.Text("Name"), disabled=True), 
+                            ft.DataColumn(ft.Text("Path"), visible=False) 
                         ],
                     rows=[],
                     heading_row_height = 0
@@ -28,7 +30,8 @@ class PlayList(ft.UserControl):
         self.dt_files.rows = list(map(lambda x: ft.DataRow(
                                 cells=[
                                     ft.DataCell(ft.Text(x[0]), data=x[0], visible=False),
-                                    ft.DataCell(ft.Text(x[1]), data=x[1])
+                                    ft.DataCell(ft.Text(x[1][0]), data=x[1][0]),
+                                    ft.DataCell(ft.Text(x[1][1]), data=x[1][1], visible=False),
                                 ],
                     # color= ft.colors.LIGHT_GREEN_900,
                     selected=False,
@@ -50,7 +53,7 @@ class PlayList(ft.UserControl):
             self.dt_files.rows[self.selected_index].selected = True
             # self.dt_files.rows[self.selected_index].color= ft.colors.LIGHT_GREEN_900
             self.update()
-            return self.dt_files.rows[self.selected_index].cells[1].data
+            return os.path.join(self.dt_files.rows[self.selected_index].cells[2].data, self.dt_files.rows[self.selected_index].cells[1].data)
             # self.on_selected_value = on_selected_value
             # надо еще выделять текущий и снимать выделение со всех осталных
         else:
@@ -63,7 +66,7 @@ class PlayList(ft.UserControl):
             self.selected_index -= 1
             self.dt_files.rows[self.selected_index].selected = True
             self.update()
-            return self.dt_files.rows[self.selected_index].cells[1].data
+            return os.path.join(self.dt_files.rows[self.selected_index].cells[2].data, self.dt_files.rows[self.selected_index].cells[1].data)
             # self.on_selected_value = on_selected_value
         else:
             return None
@@ -75,7 +78,7 @@ class PlayList(ft.UserControl):
         self.selected_index = 0
         search_name = self.name_input.value.lower()
         if search_name:
-            myfiler = list(filter(lambda x:search_name in x.lower(), self.files_list))
+            myfiler = list(filter(lambda x:search_name in x[0].lower(), self.files_list))
             if not self.name_input.value == "":
                 if len(myfiler) > 0:
                     self.data_not_found.visible = False
@@ -92,7 +95,7 @@ class PlayList(ft.UserControl):
     def on_file_list_click(self, e): 
         self.dt_files.rows[self.selected_index].selected = False
         self.selected_index = int(e.control.cells[0].data)
-        self.on_selected_value(f'{e.control.cells[0].data} | {e.control.cells[1].data}')
+        self.on_selected_value(os.path.join(e.control.cells[2].data, e.control.cells[1].data)) # os.path.join(self.dt_files.rows[self.selected_index].cells[2].data, self.dt_files.rows[self.selected_index].cells[1].data)
         self.dt_files.rows[self.selected_index].selected = True
         self.update()
 

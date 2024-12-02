@@ -4,16 +4,15 @@ import base64
 import flet as ft
 import flet.canvas as cv
 import numpy as np
+from controls.play_list import PlayList
 from controls.image_viewer import ImageViewer
 
 
 class MainControl(ft.UserControl):
     def __init__(self) -> None:
         super().__init__()
-        self.files_directory = ''
-        self.files_list = []
-        self.current_image_index = 0
-        self.number_of_items = 0
+        self.files_list_opened = False
+        self.main_window_width = 0
         self.expand = True
 
     def build(self) -> ft.Control:
@@ -27,9 +26,12 @@ class MainControl(ft.UserControl):
         self.page.overlay.append(self.pick_files_dialog)
 
         # Сделать так чтобы компонент занял всю область.
-        self.container = ImageViewer(on_mouse_move=self.on_image_viewer_mouse_move)
-        self.tf_page_size = ft.TextField(value='', expand=True)   
-        self.ft_row = ft.Column([
+        self.image_control = ImageViewer(on_mouse_move=self.on_image_viewer_mouse_move)
+        self.tf_page_size = ft.TextField(value='', expand=True)
+        self.play_list = PlayList(self.on_file_list_click) 
+        self.play_list.visible = False
+        self.btn_play_list = ft.IconButton(icon=ft.icons.MENU, on_click=self.show_playlist)   
+        self.main_window = ft.Column([
             ft.Row([
                 ft.Container(
                     ft.FloatingActionButton(icon=ft.icons.NAVIGATE_BEFORE_ROUNDED, bgcolor=ft.colors.TRANSPARENT, shape=ft.CircleBorder(),
@@ -42,7 +44,7 @@ class MainControl(ft.UserControl):
                     visible = True,
                     disabled=False
                 ),
-                    self.container,
+                    self.image_control,
                 ft.Container(
                         ft.FloatingActionButton(icon=ft.icons.NAVIGATE_NEXT_ROUNDED, bgcolor=ft.colors.TRANSPARENT, shape=ft.CircleBorder(),
                                 on_click=self.next_image
@@ -58,52 +60,75 @@ class MainControl(ft.UserControl):
             alignment=ft.MainAxisAlignment.CENTER,
             expand=True
         ), 
-        ft.Row([self.btn, self.tf_page_size]),
+        ft.Row([self.btn, self.tf_page_size, self.btn_play_list]),
         ],
         expand=True
         )
+        self.vertical_split = ft.GestureDetector(
+                    content=ft.VerticalDivider(),
+                    drag_interval=10,
+                    on_pan_update=self.move_vertical_divider,
+                    on_hover=self.show_draggable_cursor,
+                    visible=False
+                )
+        x_row = ft.Row(
+                controls=[
+                        self.main_window,
+                        self.vertical_split,
+                        self.play_list
+                ],
+            spacing=0,
+            expand=True
+        )
+        return x_row
 
-        return self.ft_row
-        # page.update()   
-        # page.on_resized = on_page_resize
+    def on_file_list_click(self, value): # 8ec182
+        print(value)
+        self.tf_page_size.value = value
+        self.update_image(value)
+
+
+    def move_vertical_divider(self, e: ft.DragUpdateEvent):
+        self.main_window.width += e.delta_x
+        self.main_window.update()
+        self.update()
+
+    def show_draggable_cursor(self, e: ft.HoverEvent):
+        e.control.mouse_cursor = ft.MouseCursor.RESIZE_LEFT_RIGHT
+        e.control.update()
 
 
     def pick_files_result(self, e: ft.FilePickerResultEvent):
-        # page.title  = (
-        #     ", ".join(map(lambda f: f.name, e.files)) if e.files else "Cancelled!"
-        # )
-        
         if e.path:
             self.tf_page_size.value = e.path
             self.files_directory = e.path
-            self.files_list = []
-            for f_name in os.listdir(e.path):
+            files_list = []
+            for f_name in os.listdir(e.path):  # Можно добавить индикатор загрузки.
                 if (os.path.isfile(os.path.join(self.files_directory, f_name)) 
                 and os.path.splitext(f_name)[-1].lower() in ['.jpg', '.jpeg ', '.png']):
-                    self.files_list.append(f_name)
-            # print(self.files_list)
-            self.number_of_items = len(self.files_list) - 1
-            self.update_image()
+                    files_list.append([f_name, e.path])
+            if files_list:
+                self.play_list.load_playlist(files_list)
+                self.update_image(os.path.join(files_list[0][1], files_list[0][0]))
         self.update()
 
-    def update_image(self):
-        self.page.title  = self.files_list[self.current_image_index]
-        img_path = os.path.join(self.files_directory, self.files_list[self.current_image_index]) # r"C:\Users\eveli\Pictures\5890633989_a359c1662b_b.jpg"
-        img = cv2.imread(img_path)
-        self.container.read_image(img)
-        self.update()
+    def update_image(self, image_name: str):
+        img = cv2.imread(image_name)
+        if img is not None:
+            self.image_control.read_image(img)
+            self.update()
 
     def next_image(self, e):
-        # global current_image_index
-        # global number_of_items
-        self.current_image_index = (self.current_image_index + 1) if self.current_image_index < self.number_of_items else 0
-        self.update_image()
+        value = self.play_list.next_file()
+        if value:
+            self.tf_page_size.value = value
+        self.update_image(value)
 
     def prev_image(self, e):
-        # global current_image_index
-        # global number_of_items
-        self.current_image_index = (self.current_image_index - 1) if self.current_image_index > 0 else self.number_of_items
-        self.update_image()
+        value = self.play_list.prev_file()
+        if value:
+            self.tf_page_size.value = value
+            self.update_image(value)
 
     def on_image_viewer_mouse_move(self, x, y):
         self.tf_page_size.value = f'{x}/{y}'
@@ -111,6 +136,23 @@ class MainControl(ft.UserControl):
 
     def on_click(self, e):
         self.pick_files_dialog.get_directory_path()
+
+    def show_playlist(self, e):
+        if self.main_window_width == 0:
+            self.main_window_width = self.page.width - 200
+        if not self.files_list_opened:
+            self.files_list_opened = True
+            self.main_window.expand = False
+            self.main_window.width = self.main_window_width
+            self.vertical_split.visible =True
+            self.play_list.visible = True
+        else:
+            self.files_list_opened = False
+            self.video_window_width = self.main_window_width
+            self.main_window.expand = True
+            self.vertical_split.visible =False
+            self.play_list.visible = False
+        self.update()
     
     # def on_page_resize(self, e):
     #     self.tf_page_size.value = f'{page.width}/{page.height}'
